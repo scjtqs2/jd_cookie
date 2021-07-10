@@ -72,6 +72,7 @@ func main() {
 func help() {
 	log.Infof(`jd_cookie service
 version: %s
+built-on: %s
 
 Usage:
 
