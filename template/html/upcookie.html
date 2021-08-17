@@ -197,7 +197,7 @@
         $('#jumplogin').click(function () {
             $.get('./qrcode_jumplogin', function (data) {
                 token = data.token;
-                var params = '{"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","browserlogin_fromurl":"' + window.location.href + '"}'
+                var params = '{"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","authlogin_returnurl":"","browserlogin_fromurl":"' + window.location.href + '"}'
                 const href = 'openapp.jdmobile://virtual/ad?params=' + encodeURI(params);
                 console.log(href)
                 window.location.href = href;
