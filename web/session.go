@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/vmihailenco/msgpack"
@@ -18,6 +19,7 @@ func (s *httpServer) GetclientIP(c *gin.Context) string {
 	if session.Get("clientip") != nil {
 		ip = string(session.Get("clientip").([]byte))
 	}
+	fmt.Println("ip:",ip)
 	if ip == "" {
 		ip = c.ClientIP()
 		session.Set("clientip", []byte(ip))
