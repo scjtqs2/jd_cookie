@@ -16,11 +16,11 @@ func (s *httpServer) GetclientIP(c *gin.Context) string {
 	session := sessions.Default(c)
 	var ip string
 	if session.Get("clientip") != nil {
-		ip = session.Get("clientip").(string)
+		ip = string(session.Get("clientip").([]byte))
 	}
 	if ip == "" {
 		ip = c.ClientIP()
-		session.Set("clientip", ip)
+		session.Set("clientip", []byte(ip))
 		session.Save()
 	}
 	return ip
