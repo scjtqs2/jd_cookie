@@ -68,7 +68,8 @@ func (s *httpServer) getUa(c *gin.Context) string {
 	ua, err := s.GetUa(c)
 	if err != nil {
 		t := strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
-		ua = fmt.Sprintf("jdapp;android;10.0.6;11;%s-%s;network/wifi;model/M2102K1C;osVer/30;appBuild/88681;partner/lc001;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 11; M2102K1C Build/RKQ1.201112.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045534 Mobile Safari/537.36", t, t)
+		//User-Agent: jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36
+		ua = fmt.Sprintf("jdapp;android;10.1.0;10;%s-%s;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36", t, t)
 		//ua = fmt.Sprintf("Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main/1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0 TM/%s", t)
 		s.SaveUa(c, ua)
 	}
