@@ -72,6 +72,11 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 packr2 build  -o jdcookie_darwin_x64
 > 
 > release中的[下载](https://github.com/scjtqs/jd_cookie/releases)二进制包，无法使用sqlite3数据库(为了交叉编译，关闭了cgo）(仅linux_amd64的预编译包可以使用sqlite3)，要使用sqlite3数据库的，请自行在需要运行的机器上编译。或者使用docker版本。
 
+v3.0.7
+> 修复ua
+> 
+> 感谢 @EthanWDC
+
 v3.0.6
 > 提供京东app方式登录后，页面上提取cookie。方便仅提取cookie的玩家。
 > 
