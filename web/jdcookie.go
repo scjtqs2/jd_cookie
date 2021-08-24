@@ -155,6 +155,7 @@ func (s *httpServer) step1(c *gin.Context) (*cookiejar.Jar, error) {
 	req.Header.Set("Proxy-Client-IP", ip)
 	req.Header.Set("WL-Proxy-Client-IP", ip)
 	req.Header.Set("CLIENT-IP", ip)
+	req.Header.Set("X-Requested-With", "com.jingdong.app.mall")
 	res, err := client.Do(req)
 	if err != nil {
 		log.Errorf("get qrcode step1 faild err=%s", err.Error())
@@ -212,6 +213,7 @@ func (s *httpServer) setp2(c *gin.Context) (string, error) {
 			"Proxy-Client-IP":    ip,
 			"WL-Proxy-Client-IP": ip,
 			"CLIENT-IP":          ip,
+			"X-Requested-With":   "com.jingdong.app.mall",
 		}).
 		SetTimeout(timeout).
 		F().Retry().Attempt(5).
@@ -313,6 +315,7 @@ func (s httpServer) checklogin_1(token *Token, jar *cookiejar.Jar, ip string, ua
 			"Proxy-Client-IP":    ip,
 			"WL-Proxy-Client-IP": ip,
 			"CLIENT-IP":          ip,
+			"X-Requested-With":   "com.jingdong.app.mall",
 		}).
 		SetTimeout(timeout).
 		F().Retry().Attempt(5).
