@@ -72,6 +72,18 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 packr2 build  -o jdcookie_darwin_x64
 > 
 > release中的[下载](https://github.com/scjtqs/jd_cookie/releases)二进制包，无法使用sqlite3数据库(为了交叉编译，关闭了cgo）(仅linux_amd64的预编译包可以使用sqlite3)，要使用sqlite3数据库的，请自行在需要运行的机器上编译。或者使用docker版本。
 
+v3.0.7
+> 修复ua
+> 
+> 感谢 @EthanWDC
+
+v3.0.6
+> 提供京东app方式登录后，页面上提取cookie。方便仅提取cookie的玩家。
+> 
+> 会话采用session的方式，避开了cookie的安全隐患。
+> 
+> 先唤起京东app，点击登录。。根据服务器网络情况，等个1-2秒，回到之前浏览器，点击 "获取通过京东app跳转登录的cookie" 即可拿到对应的cookie（仅能提取一次，提取成功后会立马销毁，数据缓存在内存中，不落地到服务器文件）。
+
 v3.0.5
 > 添加手机页面唤起京东app直接获取cookie。（因小伙伴想要玩这功能
 > 

@@ -40,6 +40,8 @@
             </button>
 
             <button id="jumplogin" title="手机端跳转app登录">跳转到京东 App 登录</button>
+            <br>
+            <button id="getcookie" title="获取通过京东app跳转登录的cookie">获取通过京东app跳转登录的cookie</button>
             <span style="display: none;">
                     <input type="checkbox" id="autoReplace" checked="checked">
                     <label for="autoReplace">
@@ -195,12 +197,54 @@
         $('#jumplogin').click(function () {
             $.get('./qrcode_jumplogin', function (data) {
                 token = data.token;
-                // const href = 'openapp.jdmobile://virtual/ad?params={"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","authlogin_returnurl":"weixin://www.baidu.com","browserlogin_fromurl":"' + window.location.host + '"}';
+                // var params = '{"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","authlogin_returnurl":"","browserlogin_fromurl":"' + window.location.href + '"}'
+                // const href = 'openapp.jdmobile://virtual/ad?params=' + encodeURI(params);
                 const href = data.jumpurl
                 console.log(href)
                 window.location.href = href;
             });
-
+        });
+        $('#getcookie').click(function () {
+            $.get('./get_cookie_by_token', function (data) {
+                $("#qrcontainer").addClass("hidden");
+                $("#refresh_qrcode").addClass("hidden");
+                userCookie = data.cookie
+                var isAutoReplace = $('#autoReplace').prop('checked');
+                if (isAutoReplace) {
+                    let icon = (data.err == 0) ? "success" : "error"
+                    if (data.err == 0) {
+                        Swal.fire({
+                            title: data.title,
+                            text: data.msg,
+                            html: '<div class="cookieCon" style="font-size:12px;">' +
+                                userCookie + '</div>',
+                            icon: icon,
+                            confirmButtonText: "复制Cookie",
+                        }).then((result) => {
+                            copyToClip(userCookie);
+                            window.location.reload(true);
+                        })
+                    } else {
+                        Swal.fire({
+                            title: data.title,
+                            text: data.msg,
+                            icon: icon
+                        }).then((result) => {
+                            window.location.reload(true);
+                        })
+                    }
+                } else {
+                    Swal.fire({
+                        title: "cookie已获取",
+                        html: '<div class="cookieCon" style="font-size:12px;">' +
+                            userCookie + '</div>',
+                        icon: "success",
+                        confirmButtonText: "复制Cookie",
+                    }).then((result) => {
+                        copyToClip(userCookie);
+                    });
+                }
+            })
         });
 
         $('.qframe-close').click(function () {
@@ -338,6 +382,11 @@ void main(void) {
 
 
 
+
+
+
+
+
 </script>
 <script id="sakura_point_fsh" type="x-shader/x_fragment">
         #ifdef GL_ES
@@ -415,6 +464,11 @@ void main(void) {
 
 
 
+
+
+
+
+
 </script>
 <!-- effects -->
 <script id="fx_common_vsh" type="x-shader/x_vertex">
@@ -429,6 +483,11 @@ void main(void) {
     texCoord = aPosition.xy * 0.5 + vec2(0.5, 0.5);
     screenCoord = aPosition.xy * vec2(uResolution.z, 1.0);
 }
+
+
+
+
+
 
 
 
@@ -459,6 +518,11 @@ void main(void) {
 
 
 
+
+
+
+
+
 </script>
 <script id="fx_brightbuf_fsh" type="x-shader/x_fragment">
         #ifdef GL_ES
@@ -475,6 +539,11 @@ void main(void) {
     vec4 col = texture2D(uSrc, texCoord);
     gl_FragColor = vec4(col.rgb * 2.0 - vec3(0.5), 1.0);
 }
+
+
+
+
+
 
 
 
@@ -506,6 +575,11 @@ void main(void) {
 
 
 
+
+
+
+
+
 </script>
 <!-- effect fragment shader template -->
 <script id="fx_common_fsh" type="x-shader/x_fragment">
@@ -527,6 +601,11 @@ void main(void) {
 
 
 
+
+
+
+
+
 </script>
 <!-- post processing -->
 <script id="pp_final_vsh" type="x-shader/x_vertex">
@@ -539,6 +618,11 @@ void main(void) {
     texCoord = aPosition.xy * 0.5 + vec2(0.5, 0.5);
     screenCoord = aPosition.xy * vec2(uResolution.z, 1.0);
 }
+
+
+
+
+
 
 
 
@@ -566,6 +650,11 @@ void main(void) {
     gl_FragColor = vec4(col.rgb, 1.0);
     gl_FragColor.a = 1.0;
 }
+
+
+
+
+
 
 
 </script>

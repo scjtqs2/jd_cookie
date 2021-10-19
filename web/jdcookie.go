@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/guonaihong/gout"
 	log "github.com/sirupsen/logrus"
@@ -66,9 +67,12 @@ func (s *httpServer) getUa(c *gin.Context) string {
 	//ua := user_agents[num]
 	ua, err := s.GetUa(c)
 	if err != nil {
-		t := strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
-		//ua = fmt.Sprintf("jdapp;android;10.0.5;11;%s-%s;network/wifi;model/M2102K1C;osVer/30;appBuild/88681;partner/lc001;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 11; M2102K1C Build/RKQ1.201112.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045534 Mobile Safari/537.36", t, t)
-		ua = fmt.Sprintf("Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main/1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0 TM/%s", t)
+		//t := strconv.FormatInt(time.Now().UnixNano()/1e3, 10)
+		//User-Agent: jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36
+		//ua = "jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36"
+		//ua = fmt.Sprintf("jdapp;android;10.1.0;10;%s-%s;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36", t, t)
+		//ua = fmt.Sprintf("Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main/1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0 TM/%s", t)
+		ua = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5 UCBrowser/13.4.2.1122"
 		s.SaveUa(c, ua)
 	}
 	return ua
@@ -153,6 +157,7 @@ func (s *httpServer) step1(c *gin.Context) (*cookiejar.Jar, error) {
 	req.Header.Set("Proxy-Client-IP", ip)
 	req.Header.Set("WL-Proxy-Client-IP", ip)
 	req.Header.Set("CLIENT-IP", ip)
+	req.Header.Set("X-Requested-With", "com.jingdong.app.mall")
 	res, err := client.Do(req)
 	if err != nil {
 		log.Errorf("get qrcode step1 faild err=%s", err.Error())
@@ -210,6 +215,7 @@ func (s *httpServer) setp2(c *gin.Context) (string, string, error) {
 			"Proxy-Client-IP":    ip,
 			"WL-Proxy-Client-IP": ip,
 			"CLIENT-IP":          ip,
+			"X-Requested-With":   "com.jingdong.app.mall",
 		}).
 		SetTimeout(timeout).
 		F().Retry().Attempt(5).
@@ -312,6 +318,7 @@ func (s httpServer) checklogin_1(token *Token, jar *cookiejar.Jar, ip string, ua
 			"Proxy-Client-IP":    ip,
 			"WL-Proxy-Client-IP": ip,
 			"CLIENT-IP":          ip,
+			"X-Requested-With":   "com.jingdong.app.mall",
 		}).
 		SetTimeout(timeout).
 		F().Retry().Attempt(5).
@@ -438,6 +445,7 @@ func (s *httpServer) upsave(c *gin.Context) {
 // 获取二维码
 func (s *httpServer) getQrcode_jumplogin(c *gin.Context) {
 	s.GetclientIP(c)
+	session := sessions.Default(c)
 	log.Warn("start get qrcode")
 	_, err := s.step1(c)
 	if err != nil {
@@ -456,16 +464,53 @@ func (s *httpServer) getQrcode_jumplogin(c *gin.Context) {
 		return
 	}
 	log.Warnf("get qrcode url = %s", qrurl)
+	token := s.getToken(c)
 	jpl := jumpLogin{
 		CookieJar: s.getCookieJar(c),
-		Tk:        s.getToken(c),
+		Tk:        token,
 		Ip:        c.ClientIP(),
+		Ctx:       c,
+		Session:   session,
 	}
 	ckChan <- jpl
+	session.Set(cache_key_cookie+"token", []byte(token.Token))
+	session.Save()
 	c.JSON(200, MSG{
 		"err":    0,
 		"qrcode": qrurl,
 		"jumpurl": jumpUrl,
-		"token":  s.getToken(c).Token,
+		"token":  token.Token,
+	})
+}
+
+//jd app登录通过token查cookie
+func (s *httpServer) get_cookie_by_token(c *gin.Context) {
+	session := sessions.Default(c)
+	tokenByte := session.Get(cache_key_cookie + "token")
+	if tokenByte == nil {
+		c.JSON(200, MSG{
+			"err":   404,
+			"title": "提取cookie失败",
+			"msg":   "请重新提取",
+		})
+		return
+	}
+	token := string(tokenByte.([]byte))
+	cookie, err := cache.Get(cache_key_cookie + token)
+	if err != nil {
+		c.JSON(200, MSG{
+			"err":   21,
+			"title": "提取cookie失败",
+			"msg":   "请重新提取，或者再次查询",
+		})
+		return
+	}
+	cache.Remove(cache_key_cookie + token)
+	session.Clear()
+	c.JSON(200, MSG{
+		"err":    0,
+		"title":  "提取cookie成功",
+		"msg":    "cookie:" + cookie.(string),
+		"cookie": cookie,
 	})
 }
