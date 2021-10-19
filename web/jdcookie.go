@@ -86,7 +86,7 @@ func (s *httpServer) getQrcode(c *gin.Context) {
 		})
 		return
 	}
-	qrurl, err := s.setp2(c)
+	qrurl,_, err := s.setp2(c)
 	if err != nil {
 		c.JSON(200, MSG{
 			"err": 1,
@@ -172,12 +172,12 @@ func (s *httpServer) step1(c *gin.Context) (*cookiejar.Jar, error) {
 }
 
 // 获取 二维码第二步
-func (s *httpServer) setp2(c *gin.Context) (string, error) {
+func (s *httpServer) setp2(c *gin.Context) (string, string, error) {
 	ip := s.GetclientIP(c)
 	token := s.getToken(c)
 	jar := s.getCookieJar(c)
 	if token.Cookies == "" {
-		return "", errors.New("empty cookies")
+		return "","", errors.New("empty cookies")
 	}
 	timeStamp := strconv.FormatInt(time.Now().Unix(), 10)
 	getUrl := "https://plogin.m.jd.com/cgi-bin/m/tmauthreflogurl?s_token=" + token.Stoken + "&v=" + timeStamp + "&remember=true"
@@ -217,7 +217,7 @@ func (s *httpServer) setp2(c *gin.Context) (string, error) {
 		Do()
 	s.updateCookieJar(c, jar)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	resjson := gjson.Parse(res)
 	token.Token = resjson.Get("token").String()
@@ -227,10 +227,11 @@ func (s *httpServer) setp2(c *gin.Context) (string, error) {
 			token.Okl_token = v.Value
 		}
 	}
+	onekeylogUrl := resjson.Get("onekeylog_url").String()
 	qrUrl := "https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=" + token.Token
 	s.updateToken(c, token)
 	//log.Warnf("url=%s,cookiejar=%+v,res=%s", getUrl, jar, res)
-	return qrUrl, nil
+	return qrUrl,onekeylogUrl, nil
 }
 
 // 获取返回的cookie信息
@@ -446,7 +447,7 @@ func (s *httpServer) getQrcode_jumplogin(c *gin.Context) {
 		})
 		return
 	}
-	qrurl, err := s.setp2(c)
+	qrurl, jumpUrl,  err := s.setp2(c)
 	if err != nil {
 		c.JSON(200, MSG{
 			"err": 1,
@@ -464,6 +465,7 @@ func (s *httpServer) getQrcode_jumplogin(c *gin.Context) {
 	c.JSON(200, MSG{
 		"err":    0,
 		"qrcode": qrurl,
+		"jumpurl": jumpUrl,
 		"token":  s.getToken(c).Token,
 	})
 }

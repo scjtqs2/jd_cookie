@@ -195,7 +195,8 @@
         $('#jumplogin').click(function () {
             $.get('./qrcode_jumplogin', function (data) {
                 token = data.token;
-                const href = 'openapp.jdmobile://virtual/ad?params={"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","authlogin_returnurl":"weixin://www.baidu.com","browserlogin_fromurl":"' + window.location.host + '"}';
+                // const href = 'openapp.jdmobile://virtual/ad?params={"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","authlogin_returnurl":"weixin://www.baidu.com","browserlogin_fromurl":"' + window.location.host + '"}';
+                const href = data.jumpurl
                 console.log(href)
                 window.location.href = href;
             });
