@@ -19,7 +19,7 @@ import (
 var (
 	h          bool
 	d          bool
-	Version    = "v3.0.7"
+	Version    = "v4.0.1"
 	Build      string
 	configPath = "config.json"
 )

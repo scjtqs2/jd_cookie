@@ -126,6 +126,8 @@ CGO_ENABLED=1 go build  -o jdcookie.exe
 .\jdcookie.exe -h
 ```
 
+## v4.x 使用验证码登录方式提取cookie
+v4.0.1
 
 ## docker 使用示例
 

@@ -72,7 +72,7 @@ func (s *httpServer) Run(addr string, ct *dig.Container) {
 	})
 	// 自动加载模板
 	t := template.New("tmp")
-	//func 函数映射 全局模板可用
+	// func 函数映射 全局模板可用
 	t.Funcs(template.FuncMap{
 		"getYear":        GetYear,
 		"formatAsDate":   FormatAsDate,
@@ -82,12 +82,12 @@ func (s *httpServer) Run(addr string, ct *dig.Container) {
 		"formatFileSize": FormatFileSize,
 	})
 
-	//从二进制中加载模板（后缀必须.html)
+	// 从二进制中加载模板（后缀必须.html)
 	templ := template.Must(template.New("").ParseFS(f, "template/html/*.html"))
 	s.engine.SetHTMLTemplate(templ)
-	//静态资源
-	//s.engine.Static("/assets", "./template/assets")
-	//s.engine.StaticFS("/public", http.FS(f))
+	// 静态资源
+	// s.engine.Static("/assets", "./template/assets")
+	// s.engine.StaticFS("/public", http.FS(f))
 	s.engine.GET("/", func(c *gin.Context) {
 		s.GetclientIP(c)
 		sessions.Default(c)
@@ -95,7 +95,7 @@ func (s *httpServer) Run(addr string, ct *dig.Container) {
 		ct.Invoke(func(version string) {
 			v = version
 		})
-		c.HTML(http.StatusOK, "upcookie.html", gin.H{
+		c.HTML(http.StatusOK, "smsck.html", gin.H{
 			"version": v,
 		})
 	})
@@ -108,7 +108,7 @@ func (s *httpServer) Run(addr string, ct *dig.Container) {
 	// 获取二维码
 	s.engine.GET("/qrcode", s.getQrcode)
 	s.engine.GET("/qrcode_jumplogin", s.getQrcode_jumplogin)
-	s.engine.GET("/get_cookie_by_token",s.get_cookie_by_token)
+	s.engine.GET("/get_cookie_by_token", s.get_cookie_by_token)
 	// 获取返回的cookie信息
 	s.engine.GET("/cookie", s.getCookie)
 	// 获取各种配置文件api
@@ -118,8 +118,9 @@ func (s *httpServer) Run(addr string, ct *dig.Container) {
 	s.engine.POST("/api/save")
 	s.engine.GET("/home")
 	s.engine.POST("/auth")
-	//s.engine.GET("/test",s.test)
-
+	// s.engine.GET("/test",s.test)
+	s.engine.GET("/get_sms_code", s.getSmsCode)
+	s.engine.GET("/check_sms_code", s.checkSmsCode)
 	// 初始化db
 	s.initdb()
 
@@ -158,15 +159,15 @@ func (s *httpServer) initdb() {
 	}
 }
 
-//直接唤起 京东 客户端 后台获取cookie
+// 直接唤起 京东 客户端 后台获取cookie
 func (s *httpServer) backgroundRun() {
-	for{
+	for {
 		tk := <-ckChan
 		go s.background_check_login(tk)
 	}
 }
 
-func (s *httpServer) background_check_login(tk jumpLogin)  {
+func (s *httpServer) background_check_login(tk jumpLogin) {
 	var result string
 	var err error
 	tm := strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
@@ -178,16 +179,16 @@ func (s *httpServer) background_check_login(tk jumpLogin)  {
 		}
 		checkJson := gjson.Parse(result)
 		if checkJson.Get("errcode").Int() == 0 {
-			//获取cookie
+			// 获取cookie
 			token := s.getJdCookie_1(tk.Tk, tk.CookieJar)
-			//写db
+			// 写db
 			if s.Conf.DbConf.DbEnable {
 				_, err := s.cookiesRepo.UpdateCookie(token.PtPin, token.PtKey, token.UserCookie)
 				if err != nil {
 					log.Errorf("save cookie to db faild %s", err.Error())
 				}
 			}
-			////发送数据给 挂机服务器
+			// //发送数据给 挂机服务器
 			postUrl := s.Conf.UpSave
 			if postUrl != "" {
 				var res MSG
@@ -232,7 +233,7 @@ func (s *httpServer) background_check_login(tk jumpLogin)  {
 			cache.SetWithExpire(cache_key_cookie+token.Token, token.UserCookie, time.Minute*10)
 			break
 		} else {
-			log.Errorf("获取cookie失败 for token=%s",tk.Tk.Token)
+			log.Errorf("获取cookie失败 for token=%s", tk.Tk.Token)
 		}
 		time.Sleep(time.Second * 1)
 	}

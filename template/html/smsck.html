@@ -1,0 +1,669 @@
+{{ define "smsck.html" }}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>首页 · 京东薅羊毛控制面板</title>
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/codemirror.min.js"></script>
+    <script type="text/javascript" src="./assets/js/comment.js"></script>
+    <script type="text/javascript" src="./assets/js/shell.js"></script>
+    <script type="text/javascript" src="./assets/js/sublime.js"></script>
+    <script type="text/javascript" src="./assets/js/sweetalert2.js"></script>
+    <script type="text/javascript" src="./assets/js/qrcode.min.js"></script>
+    <script type="text/javascript" src="./assets/js/prefixfree.min.js"></script>
+    <!--    <script type="text/javascript" src="https://cdn.bootcss.com/clipboard.js/2.0.0/clipboard.min.js"></script>-->
+
+    <link rel="stylesheet" type="text/css" href="./assets/css/normalize.min.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/codemirror.min.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/twilight.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/dracula.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/main.css">
+    <link rel="icon" type="image/x-icon" href="https://www.jd.com/favicon.ico"/>
+</head>
+<body>
+<div class="container">
+    <div style="text-align:center;">
+
+        <header>
+            <h1 style="margin-top: 100px; color: #000000">验证登录jd获取cookie</h1>
+            <h1 style="margin-top: 10px; color: #000000">自动更新cookie version {{ .version }}</h1>
+            <h1 style="margin-top: 10px; color: #000000">support by <a href="https://github.com/scjtqs/jd_cookie" target="_blank">scjtqs</a></h1>
+
+            <div class="sms-login">
+                <input type="text" maxlength="11" autofocus="true"  name="phone" id="phone" value="" placeholder="输入你的手机号 eg: 136xxx">
+                <button id="getcode" class="swal2-confirm swal2-styled send-sms-btn" title="通过手机号获取验证码">获取验证码</button>
+                <input type="text" name="code" id="code" maxlength="6" placeholder="6位验证码" value="" placeholder="输入你手机收到的验证码">
+                <button id="checkcode" class="swal2-confirm swal2-styled send-sms-btn" title="校验验证码">校验验证码</button>
+            </div>
+            <span style="display: none;">
+                    <input type="checkbox" id="autoReplace" checked="checked">
+                    <label for="autoReplace">
+                        <font color="#F0EFF4" size="1">扫码后自动替换</font>
+                    </label>
+                </span>
+        </header>
+
+
+    </div>
+</div>
+<div id="qrcontainer" class="hidden">
+    <div class="qframe">
+        <div id="refresh_qrcode" class="hidden">
+            <div>
+                <h3>二维码已失效</h3>
+                <div class="refresh">刷新</div>
+            </div>
+        </div>
+        <div id="qrcode"></div>
+        <div class="info">请使用手机京东APP扫码</div>
+        <div class="qframe-close" title="关闭">✖</div>
+    </div>
+</div>
+<script>
+    $.ajaxSetup({
+        cache: false
+    });
+
+    var qrcode, userCookie;
+    $(document).ready(function () {
+
+
+        // 勾选记忆
+        if (sessionStorage.getItem('autoReplaceCookie') === 'false') {
+            $('#autoReplace').prop('checked', false);
+        }
+        $('#autoReplace').on('change', function () {
+            sessionStorage.setItem('autoReplaceCookie', $(this).prop('checked'));
+        });
+
+        qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "sample",
+            correctLevel: QRCode.CorrectLevel.L
+        });
+
+
+        function copyToClip(content, message) {
+            var aux = document.createElement("input");
+            aux.setAttribute("value", content);
+            document.body.appendChild(aux);
+            aux.select();
+            document.execCommand("copy");
+            document.body.removeChild(aux);
+        }
+
+        function autoReplace(cookie) {
+            var value = editor.getValue();
+            var ptPin = /pt_pin=[\S]+;/.exec(cookie)[0];
+            var cookieReg = new RegExp(`pt_key=[\\S]+;${ptPin}`);
+            if (cookieReg.test(value)) {
+                var newValue = value.replaceAll(cookieReg, cookie);
+                editor.setValue(newValue);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        var token = undefined
+        $('#jumplogin').click(function () {
+            $.get('./qrcode_jumplogin', function (data) {
+                token = data.token;
+                // var params = '{"category":"jump","des":"ThirdPartyLogin","action":"to","onekeylogin":"return","url":"https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=' + token + '","authlogin_returnurl":"","browserlogin_fromurl":"' + window.location.href + '"}'
+                // const href = 'openapp.jdmobile://virtual/ad?params=' + encodeURI(params);
+                const href = data.jumpurl
+                console.log(href)
+                window.location.href = href;
+            });
+        });
+
+        $('#getcode').click(function () {
+            var phone = $('#phone').val()
+            $.get('./get_sms_code?phone=' + phone, function (data) {
+                var isAutoReplace = $('#autoReplace').prop('checked');
+                if (data.err == 200) {
+                    $("#qrcontainer").addClass("hidden");
+                    $("#refresh_qrcode").addClass("hidden");
+                    Swal.fire({
+                        title: data.title,
+                        text: data.msg,
+                        icon: "success"
+                    }).then((result) => {
+                        console.log(data)
+                        // window.location.reload(false);
+                    })
+                } else {
+                    Swal.fire({
+                        title: data.title,
+                        text: data.msg,
+                        icon: "error"
+                    }).then((result) => {
+                        window.location.reload(false);
+                    })
+                }
+            });
+        });
+        $('#checkcode').click(function () {
+            var code = $('#code').val()
+            $.get('./check_sms_code?code=' + code, function (data) {
+                if (data.err == 200) {
+                    $("#qrcontainer").addClass("hidden");
+                    $("#refresh_qrcode").addClass("hidden");
+                    userCookie = data.cookie
+                    var isAutoReplace = $('#autoReplace').prop('checked');
+                    if (isAutoReplace) {
+                        $.post('./api/upsave', {
+                            userCookie: userCookie,
+                        }, function (data) {
+                            let icon = (data.err == 0) ? "success" : "error"
+                            if (data.err == 0) {
+                                Swal.fire({
+                                    title: data.title,
+                                    text: data.msg,
+                                    html: '<div class="cookieCon" style="font-size:12px;">' +
+                                        userCookie + '</div>',
+                                    icon: "success",
+                                    confirmButtonText: "复制Cookie",
+                                }).then((result) => {
+                                    copyToClip(userCookie);
+                                    window.location.reload(true);
+                                })
+                            } else {
+                                Swal.fire({
+                                    title: data.title,
+                                    text: data.msg,
+                                    icon: "error"
+                                }).then((result) => {
+                                    window.location.reload(true);
+                                })
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "cookie已获取",
+                            html: '<div class="cookieCon" style="font-size:12px;">' +
+                                userCookie + '</div>',
+                            icon: "success",
+                            confirmButtonText: "复制Cookie",
+                        }).then((result) => {
+                            copyToClip(userCookie);
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        title: data.title,
+                        text: data.msg,
+                        icon: "error"
+                    }).then((result) => {
+                        window.location.reload(true);
+                    })
+                }
+            });
+        });
+
+        $('.qframe-close').click(function () {
+            $("#qrcontainer").addClass("hidden");
+            $("#refresh_qrcode").addClass("hidden");
+        });
+
+        $('#save').click(function () {
+            var confContent = editor.getValue();
+            $.post('./api/save01', {
+                content: confContent,
+                name: "upconfig.sh"
+            }, function (data) {
+                let icon = (data.err == 0) ? "success" : "error"
+                Swal.fire({
+                    title: data.title,
+                    text: data.msg,
+                    icon: icon
+                }).then((result) => {
+                    window.location.reload(true);
+                })
+            });
+        });
+
+        $('#wrap').click(function () {
+            var lineWrapping = editor.getOption('lineWrapping');
+            editor.setOption('lineWrapping', !lineWrapping);
+        });
+    });
+</script>
+
+</body>
+
+<!-- sakura 背景 -->
+</head>
+
+<body>
+<!-- partial:index.partial.html -->
+<canvas id="sakura"></canvas>
+
+<!-- sakura shader -->
+<script id="sakura_point_vsh" type="x-shader/x_vertex">
+        uniform mat4 uProjection;
+uniform mat4 uModelview;
+uniform vec3 uResolution;
+uniform vec3 uOffset;
+uniform vec3 uDOF;  //x:focus distance, y:focus radius, z:max radius
+uniform vec3 uFade; //x:start distance, y:half distance, z:near fade start
+
+attribute vec3 aPosition;
+attribute vec3 aEuler;
+attribute vec2 aMisc; //x:size, y:fade
+
+varying vec3 pposition;
+varying float psize;
+varying float palpha;
+varying float pdist;
+
+//varying mat3 rotMat;
+varying vec3 normX;
+varying vec3 normY;
+varying vec3 normZ;
+varying vec3 normal;
+
+varying float diffuse;
+varying float specular;
+varying float rstop;
+varying float distancefade;
+
+void main(void) {
+    // Projection is based on vertical angle
+    vec4 pos = uModelview * vec4(aPosition + uOffset, 1.0);
+    gl_Position = uProjection * pos;
+    gl_PointSize = aMisc.x * uProjection[1][1] / -pos.z * uResolution.y * 0.5;
+
+    pposition = pos.xyz;
+    psize = aMisc.x;
+    pdist = length(pos.xyz);
+    palpha = smoothstep(0.0, 1.0, (pdist - 0.1) / uFade.z);
+
+    vec3 elrsn = sin(aEuler);
+    vec3 elrcs = cos(aEuler);
+    mat3 rotx = mat3(
+        1.0, 0.0, 0.0,
+        0.0, elrcs.x, elrsn.x,
+        0.0, -elrsn.x, elrcs.x
+    );
+    mat3 roty = mat3(
+        elrcs.y, 0.0, -elrsn.y,
+        0.0, 1.0, 0.0,
+        elrsn.y, 0.0, elrcs.y
+    );
+    mat3 rotz = mat3(
+        elrcs.z, elrsn.z, 0.0,
+        -elrsn.z, elrcs.z, 0.0,
+        0.0, 0.0, 1.0
+    );
+    mat3 rotmat = rotx * roty * rotz;
+    normal = rotmat[2];
+
+    mat3 trrotm = mat3(
+        rotmat[0][0], rotmat[1][0], rotmat[2][0],
+        rotmat[0][1], rotmat[1][1], rotmat[2][1],
+        rotmat[0][2], rotmat[1][2], rotmat[2][2]
+    );
+    normX = trrotm[0];
+    normY = trrotm[1];
+    normZ = trrotm[2];
+
+    const vec3 lit = vec3(0.6917144638660746, 0.6917144638660746, -0.20751433915982237);
+
+    float tmpdfs = dot(lit, normal);
+    if(tmpdfs < 0.0) {
+        normal = -normal;
+        tmpdfs = dot(lit, normal);
+    }
+    diffuse = 0.4 + tmpdfs;
+
+    vec3 eyev = normalize(-pos.xyz);
+    if(dot(eyev, normal) > 0.0) {
+        vec3 hv = normalize(eyev + lit);
+        specular = pow(max(dot(hv, normal), 0.0), 20.0);
+    }
+    else {
+        specular = 0.0;
+    }
+
+    rstop = clamp((abs(pdist - uDOF.x) - uDOF.y) / uDOF.z, 0.0, 1.0);
+    rstop = pow(rstop, 0.5);
+    //-0.69315 = ln(0.5)
+    distancefade = min(1.0, exp((uFade.x - pdist) * 0.69315 / uFade.y));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script id="sakura_point_fsh" type="x-shader/x_fragment">
+        #ifdef GL_ES
+//precision mediump float;
+precision highp float;
+#endif
+
+uniform vec3 uDOF;  //x:focus distance, y:focus radius, z:max radius
+uniform vec3 uFade; //x:start distance, y:half distance, z:near fade start
+
+const vec3 fadeCol = vec3(0.08, 0.03, 0.06);
+
+varying vec3 pposition;
+varying float psize;
+varying float palpha;
+varying float pdist;
+
+//varying mat3 rotMat;
+varying vec3 normX;
+varying vec3 normY;
+varying vec3 normZ;
+varying vec3 normal;
+
+varying float diffuse;
+varying float specular;
+varying float rstop;
+varying float distancefade;
+
+float ellipse(vec2 p, vec2 o, vec2 r) {
+    vec2 lp = (p - o) / r;
+    return length(lp) - 1.0;
+}
+
+void main(void) {
+    vec3 p = vec3(gl_PointCoord - vec2(0.5, 0.5), 0.0) * 2.0;
+    vec3 d = vec3(0.0, 0.0, -1.0);
+    float nd = normZ.z; //dot(-normZ, d);
+    if(abs(nd) < 0.0001) discard;
+
+    float np = dot(normZ, p);
+    vec3 tp = p + d * np / nd;
+    vec2 coord = vec2(dot(normX, tp), dot(normY, tp));
+
+    //angle = 15 degree
+    const float flwrsn = 0.258819045102521;
+    const float flwrcs = 0.965925826289068;
+    mat2 flwrm = mat2(flwrcs, -flwrsn, flwrsn, flwrcs);
+    vec2 flwrp = vec2(abs(coord.x), coord.y) * flwrm;
+
+    float r;
+    if(flwrp.x < 0.0) {
+        r = ellipse(flwrp, vec2(0.065, 0.024) * 0.5, vec2(0.36, 0.96) * 0.5);
+    }
+    else {
+        r = ellipse(flwrp, vec2(0.065, 0.024) * 0.5, vec2(0.58, 0.96) * 0.5);
+    }
+
+    if(r > rstop) discard;
+
+    vec3 col = mix(vec3(1.0, 0.8, 0.75), vec3(1.0, 0.9, 0.87), r);
+    float grady = mix(0.0, 1.0, pow(coord.y * 0.5 + 0.5, 0.35));
+    col *= vec3(1.0, grady, grady);
+    col *= mix(0.8, 1.0, pow(abs(coord.x), 0.3));
+    col = col * diffuse + specular;
+
+    col = mix(fadeCol, col, distancefade);
+
+    float alpha = (rstop > 0.001)? (0.5 - r / (rstop * 2.0)) : 1.0;
+    alpha = smoothstep(0.0, 1.0, alpha) * palpha;
+
+    gl_FragColor = vec4(col * 0.5, alpha);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<!-- effects -->
+<script id="fx_common_vsh" type="x-shader/x_vertex">
+        uniform vec3 uResolution;
+attribute vec2 aPosition;
+
+varying vec2 texCoord;
+varying vec2 screenCoord;
+
+void main(void) {
+    gl_Position = vec4(aPosition, 0.0, 1.0);
+    texCoord = aPosition.xy * 0.5 + vec2(0.5, 0.5);
+    screenCoord = aPosition.xy * vec2(uResolution.z, 1.0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script id="bg_fsh" type="x-shader/x_fragment">
+        #ifdef GL_ES
+//precision mediump float;
+precision highp float;
+#endif
+
+uniform vec2 uTimes;
+
+varying vec2 texCoord;
+varying vec2 screenCoord;
+
+void main(void) {
+    vec3 col;
+    float c;
+    vec2 tmpv = texCoord * vec2(0.8, 1.0) - vec2(0.95, 1.0);
+    c = exp(-pow(length(tmpv) * 1.8, 2.0));
+    col = mix(vec3(0.02, 0.0, 0.03), vec3(0.96, 0.98, 1.0) * 1.5, c);
+    gl_FragColor = vec4(col * 0.5, 1.0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script id="fx_brightbuf_fsh" type="x-shader/x_fragment">
+        #ifdef GL_ES
+//precision mediump float;
+precision highp float;
+#endif
+uniform sampler2D uSrc;
+uniform vec2 uDelta;
+
+varying vec2 texCoord;
+varying vec2 screenCoord;
+
+void main(void) {
+    vec4 col = texture2D(uSrc, texCoord);
+    gl_FragColor = vec4(col.rgb * 2.0 - vec3(0.5), 1.0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script id="fx_dirblur_r4_fsh" type="x-shader/x_fragment">
+        #ifdef GL_ES
+//precision mediump float;
+precision highp float;
+#endif
+uniform sampler2D uSrc;
+uniform vec2 uDelta;
+uniform vec4 uBlurDir; //dir(x, y), stride(z, w)
+
+varying vec2 texCoord;
+varying vec2 screenCoord;
+
+void main(void) {
+    vec4 col = texture2D(uSrc, texCoord);
+    col = col + texture2D(uSrc, texCoord + uBlurDir.xy * uDelta);
+    col = col + texture2D(uSrc, texCoord - uBlurDir.xy * uDelta);
+    col = col + texture2D(uSrc, texCoord + (uBlurDir.xy + uBlurDir.zw) * uDelta);
+    col = col + texture2D(uSrc, texCoord - (uBlurDir.xy + uBlurDir.zw) * uDelta);
+    gl_FragColor = col / 5.0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<!-- effect fragment shader template -->
+<script id="fx_common_fsh" type="x-shader/x_fragment">
+        #ifdef GL_ES
+//precision mediump float;
+precision highp float;
+#endif
+uniform sampler2D uSrc;
+uniform vec2 uDelta;
+
+varying vec2 texCoord;
+varying vec2 screenCoord;
+
+void main(void) {
+    gl_FragColor = texture2D(uSrc, texCoord);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<!-- post processing -->
+<script id="pp_final_vsh" type="x-shader/x_vertex">
+        uniform vec3 uResolution;
+attribute vec2 aPosition;
+varying vec2 texCoord;
+varying vec2 screenCoord;
+void main(void) {
+    gl_Position = vec4(aPosition, 0.0, 1.0);
+    texCoord = aPosition.xy * 0.5 + vec2(0.5, 0.5);
+    screenCoord = aPosition.xy * vec2(uResolution.z, 1.0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script id="pp_final_fsh" type="x-shader/x_fragment">
+        #ifdef GL_ES
+//precision mediump float;
+precision highp float;
+#endif
+uniform sampler2D uSrc;
+uniform sampler2D uBloom;
+uniform vec2 uDelta;
+varying vec2 texCoord;
+varying vec2 screenCoord;
+void main(void) {
+    vec4 srccol = texture2D(uSrc, texCoord) * 2.0;
+    vec4 bloomcol = texture2D(uBloom, texCoord);
+    vec4 col;
+    col = srccol + bloomcol * (vec4(1.0) + srccol);
+    col *= smoothstep(1.0, 0.0, pow(length((texCoord - vec2(0.5)) * 2.0), 1.2) * 0.5);
+    col = pow(col, vec4(0.45454545454545)); //(1.0 / 2.2)
+
+    gl_FragColor = vec4(col.rgb, 1.0);
+    gl_FragColor.a = 1.0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+
+</html>
+
+{{end}}

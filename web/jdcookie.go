@@ -19,7 +19,7 @@ import (
 
 var timeout = time.Second * 5
 
-//var ua = "jdapp;android;10.0.5;11;0393465333165363-5333430323261366;network/wifi;model/M2102K1C;osVer/30;appBuild/88681;partner/lc001;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 11; M2102K1C Build/RKQ1.201112.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045534 Mobile Safari/537.36"
+// var ua = "jdapp;android;10.0.5;11;0393465333165363-5333430323261366;network/wifi;model/M2102K1C;osVer/30;appBuild/88681;partner/lc001;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 11; M2102K1C Build/RKQ1.201112.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045534 Mobile Safari/537.36"
 var user_agents = []string{
 	"jdapp;android;10.0.2;10;network/wifi;Mozilla/5.0 (Linux; Android 10; ONEPLUS A5010 Build/QKQ1.191014.012; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045230 Mobile Safari/537.36",
 	"jdapp;iPhone;10.0.2;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
@@ -60,18 +60,18 @@ var user_agents = []string{
 }
 
 func (s *httpServer) getUa(c *gin.Context) string {
-	//lens := len(user_agents)
-	//rand.Seed(time.Now().UnixNano())
-	////r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	//num := rand.Intn(lens)
-	//ua := user_agents[num]
+	// lens := len(user_agents)
+	// rand.Seed(time.Now().UnixNano())
+	// //r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// num := rand.Intn(lens)
+	// ua := user_agents[num]
 	ua, err := s.GetUa(c)
 	if err != nil {
-		//t := strconv.FormatInt(time.Now().UnixNano()/1e3, 10)
-		//User-Agent: jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36
-		//ua = "jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36"
-		//ua = fmt.Sprintf("jdapp;android;10.1.0;10;%s-%s;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36", t, t)
-		//ua = fmt.Sprintf("Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main/1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0 TM/%s", t)
+		// t := strconv.FormatInt(time.Now().UnixNano()/1e3, 10)
+		// User-Agent: jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36
+		// ua = "jdapp;android;10.1.0;10;3643464346636663-1346663656937316;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36"
+		// ua = fmt.Sprintf("jdapp;android;10.1.0;10;%s-%s;network/wifi;model/SM-N9600;addressid/4621427242;aid/c4d4d6f61dfce97a;oaid/;osVer/29;appBuild/89583;partner/google;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 10; SM-N9600 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36", t, t)
+		// ua = fmt.Sprintf("Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main/1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0 TM/%s", t)
 		ua = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5 UCBrowser/13.4.2.1122"
 		s.SaveUa(c, ua)
 	}
@@ -90,7 +90,7 @@ func (s *httpServer) getQrcode(c *gin.Context) {
 		})
 		return
 	}
-	qrurl,_, err := s.setp2(c)
+	qrurl, _, err := s.setp2(c)
 	if err != nil {
 		c.JSON(200, MSG{
 			"err": 1,
@@ -124,7 +124,7 @@ func (s *httpServer) praseSetCookies(c *gin.Context, rsp string, cookie *cookiej
 	}
 	token.Cookies = "guid=" + token.Guid + "; lang=chs; lsid=" + token.Lsid + "; lstoken=" + token.Lstoken + "; "
 	s.updateToken(c, token)
-	//log.Warnf("cookies=%s", cookies)
+	// log.Warnf("cookies=%s", cookies)
 }
 
 // 获取二维码第一步
@@ -150,7 +150,7 @@ func (s *httpServer) step1(c *gin.Context) (*cookiejar.Jar, error) {
 	req.Header.Add("Accept", "application/json, text/plain, */*")
 	req.Header.Add("Accept-Language", "zh-cn")
 	req.Header.Add("Referer", "https://plogin.m.jd.com/cgi-bin/mm/new_login_entrance?lang=chs&appid=300&returnurl=https://wq.jd.com/passport/LoginRedirect?state="+timeStamp+"&returnurl=https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&/myJd/home.action&source=wq_passport")
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36")
+	// req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36")
 	req.Header.Add("User-Agent", s.getUa(c))
 	req.Header.Add("Host", "plogin.m.jd.com")
 	req.Header.Set("X-Forwarded-For", ip)
@@ -171,7 +171,7 @@ func (s *httpServer) step1(c *gin.Context) (*cookiejar.Jar, error) {
 		return nil, err
 	}
 	s.praseSetCookies(c, string(body), jar)
-	//log.Warnf("url=%s,cookiejar=%+v,res=%s", getUrl, jar, string(body))
+	// log.Warnf("url=%s,cookiejar=%+v,res=%s", getUrl, jar, string(body))
 	s.updateCookieJar(c, jar)
 	return jar, nil
 }
@@ -182,7 +182,7 @@ func (s *httpServer) setp2(c *gin.Context) (string, string, error) {
 	token := s.getToken(c)
 	jar := s.getCookieJar(c)
 	if token.Cookies == "" {
-		return "","", errors.New("empty cookies")
+		return "", "", errors.New("empty cookies")
 	}
 	timeStamp := strconv.FormatInt(time.Now().Unix(), 10)
 	getUrl := "https://plogin.m.jd.com/cgi-bin/m/tmauthreflogurl?s_token=" + token.Stoken + "&v=" + timeStamp + "&remember=true"
@@ -209,7 +209,7 @@ func (s *httpServer) setp2(c *gin.Context) (string, string, error) {
 			"Accept":       "application/json, text/plain, */*",
 			"Cookie":       token.Cookies,
 			"Referer":      "https://plogin.m.jd.com/login/login?appid=300&returnurl=https://wqlogin2.jd.com/passport/LoginRedirect?state=" + timeStamp + "&returnurl=//home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&/myJd/home.action&source=wq_passport",
-			//"User-Agent":         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
+			// "User-Agent":         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
 			"User-Agent":         s.getUa(c),
 			"X-Forwarded-For":    ip,
 			"Proxy-Client-IP":    ip,
@@ -236,14 +236,14 @@ func (s *httpServer) setp2(c *gin.Context) (string, string, error) {
 	onekeylogUrl := resjson.Get("onekeylog_url").String()
 	qrUrl := "https://plogin.m.jd.com/cgi-bin/m/tmauth?appid=300&client_type=m&token=" + token.Token
 	s.updateToken(c, token)
-	//log.Warnf("url=%s,cookiejar=%+v,res=%s", getUrl, jar, res)
-	return qrUrl,onekeylogUrl, nil
+	// log.Warnf("url=%s,cookiejar=%+v,res=%s", getUrl, jar, res)
+	return qrUrl, onekeylogUrl, nil
 }
 
 // 获取返回的cookie信息
 func (s *httpServer) getCookie(c *gin.Context) {
-	//session := sessions.Default(c)
-	//cookies=session.Get("cookies").(string)
+	// session := sessions.Default(c)
+	// cookies=session.Get("cookies").(string)
 	jar := s.getCookieJar(c)
 	check, err := s.checkLogin(c, jar)
 	if err != nil {
@@ -255,7 +255,7 @@ func (s *httpServer) getCookie(c *gin.Context) {
 	}
 	checkJson := gjson.Parse(check)
 	if checkJson.Get("errcode").Int() == 0 {
-		//获取cookie
+		// 获取cookie
 		ucookie := s.getJdCookie(check, jar, c)
 		c.JSON(200, MSG{
 			"err":    0,
@@ -283,7 +283,7 @@ func (s *httpServer) checkLogin(c *gin.Context, jar *cookiejar.Jar) (string, err
 	if err != nil {
 		return "", err
 	}
-	//log.Warnf("checkLogin res=%s",res)
+	// log.Warnf("checkLogin res=%s",res)
 	return res, nil
 }
 
@@ -374,7 +374,7 @@ func (s *httpServer) getJdCookie_1(token *Token, cookie *cookiejar.Jar) *Token {
 func (s *httpServer) upsave(c *gin.Context) {
 	// 清空缓存参数
 	token := s.getToken(c)
-	//写db
+	// 写db
 	if s.Conf.DbConf.DbEnable {
 		_, err := s.cookiesRepo.UpdateCookie(token.PtPin, token.PtKey, token.UserCookie)
 		if err != nil {
@@ -382,7 +382,7 @@ func (s *httpServer) upsave(c *gin.Context) {
 		}
 	}
 	s.cleanSession(c)
-	////发送数据给 挂机服务器
+	// //发送数据给 挂机服务器
 	postUrl := s.Conf.UpSave
 	if postUrl != "" {
 		var res MSG
@@ -455,7 +455,7 @@ func (s *httpServer) getQrcode_jumplogin(c *gin.Context) {
 		})
 		return
 	}
-	qrurl, jumpUrl,  err := s.setp2(c)
+	qrurl, jumpUrl, err := s.setp2(c)
 	if err != nil {
 		c.JSON(200, MSG{
 			"err": 1,
@@ -476,14 +476,14 @@ func (s *httpServer) getQrcode_jumplogin(c *gin.Context) {
 	session.Set(cache_key_cookie+"token", []byte(token.Token))
 	session.Save()
 	c.JSON(200, MSG{
-		"err":    0,
-		"qrcode": qrurl,
+		"err":     0,
+		"qrcode":  qrurl,
 		"jumpurl": jumpUrl,
-		"token":  token.Token,
+		"token":   token.Token,
 	})
 }
 
-//jd app登录通过token查cookie
+// jd app登录通过token查cookie
 func (s *httpServer) get_cookie_by_token(c *gin.Context) {
 	session := sessions.Default(c)
 	tokenByte := session.Get(cache_key_cookie + "token")
