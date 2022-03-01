@@ -21,7 +21,7 @@ ENV GO111MODULE "on"
 
 RUN cd /src \
     && apt-get update \
-    && apt-get install -y build-essential openssl git make openssh-client \
+    && apt-get install -y build-essential openssl git\
     && rm -rf /var/lib/apt/lists/*apt \
     && rm -rf dist \
     && go mod tidy \
