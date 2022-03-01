@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine3.13 as builder
+FROM golang:1.17 as builder
 
 
 LABEL name="jd_cookie server"
@@ -20,7 +20,9 @@ ENV GO111MODULE "on"
 #RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
 
 RUN cd /src \
-    && apk add --no-cache --update gcc musl-dev  make \
+    && apt-get update \
+    && apt-get install -y build-essential openssl git make openssh-client \
+    && rm -rf /var/lib/apt/lists/*apt \
     && rm -rf dist \
     && go mod tidy \
     && make
