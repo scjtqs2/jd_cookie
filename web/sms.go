@@ -233,7 +233,7 @@ func (s *httpServer) checkCode(c *gin.Context) (*Token, error) {
 	log.Info("############  登录成功，获取到 Cookie  #############")
 	log.Infof("Cookie1=%s", token.UserCookie)
 	log.Info("####################################################")
-	s.cleanSession(c)
+	s.updateToken(c, token)
 	return token, nil
 }
 
@@ -282,7 +282,6 @@ func (s *httpServer) checkSmsCode(ctx *gin.Context) {
 			"title": "参数错误",
 			"msg":   "请输入手机验证码",
 		})
-		s.cleanSession(ctx)
 		return
 	}
 	if !regexp.MustCompile(`^\d{6}$`).MatchString(code) {
@@ -291,7 +290,6 @@ func (s *httpServer) checkSmsCode(ctx *gin.Context) {
 			"title": "参数错误",
 			"msg":   "请输入6位验证码",
 		})
-		s.cleanSession(ctx)
 		return
 	}
 	tk, err := s.checkCode(ctx)
@@ -301,7 +299,6 @@ func (s *httpServer) checkSmsCode(ctx *gin.Context) {
 			"title": "校验验证码失败",
 			"msg":   err.Error(),
 		})
-		s.cleanSession(ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, MSG{

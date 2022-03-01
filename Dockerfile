@@ -28,6 +28,8 @@ RUN cd /src \
 FROM alpine:3.13 as production
 
 ENV UPSAVE ""
+ENV UPSAVE_METHOD "POST" # POST GET
+ENV UPSAVE_KEY  "userCookie" # post OR  get 方式的 cookie传递的key
 
 ENV DB_ENABLE "false"
 ENV DB_HOST ""

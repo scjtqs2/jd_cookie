@@ -14,6 +14,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -385,51 +386,67 @@ func (s *httpServer) upsave(c *gin.Context) {
 	// //发送数据给 挂机服务器
 	postUrl := s.Conf.UpSave
 	if postUrl != "" {
-		var res MSG
+		var res string
 		code := 0
-		err := gout.POST(postUrl).
-			//Debug(true).
-			SetWWWForm(
-				gout.H{
-					"userCookie": token.UserCookie,
-				},
-			).
-			BindJSON(&res).
-			SetHeader(gout.H{
-				"Connection":   "Keep-Alive",
-				"Content-Type": "application/x-www-form-urlencoded; Charset=UTF-8",
-				"Accept":       "application/json, text/plain, */*",
-				"User-Agent":   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
-			}).
-			Code(&code).
-			SetTimeout(timeout).
-			F().Retry().Attempt(5).
-			WaitTime(time.Millisecond * 500).MaxWaitTime(time.Second * 5).
-			Do()
+		var err error
+		switch strings.ToUpper(s.Conf.UpSaveMethod) {
+		case "GET":
+			err = gout.GET(postUrl).
+				//Debug(true).
+				SetQuery(
+					gout.H{
+						s.Conf.UpSaveKey: token.UserCookie,
+					},
+				).
+				BindBody(&res).
+				SetHeader(gout.H{
+					"Connection": "Keep-Alive",
+					"Accept":     "application/json, text/plain, */*",
+					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
+				}).
+				Code(&code).
+				SetTimeout(timeout).
+				F().Retry().Attempt(5).
+				WaitTime(time.Millisecond * 500).MaxWaitTime(time.Second * 5).
+				Do()
+		default:
+			err = gout.POST(postUrl).
+				//Debug(true).
+				SetWWWForm(
+					gout.H{
+						s.Conf.UpSaveKey: token.UserCookie,
+					},
+				).
+				BindBody(&res).
+				SetHeader(gout.H{
+					"Connection":   "Keep-Alive",
+					"Content-Type": "application/x-www-form-urlencoded; Charset=UTF-8",
+					"Accept":       "application/json, text/plain, */*",
+					"User-Agent":   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
+				}).
+				Code(&code).
+				SetTimeout(timeout).
+				F().Retry().Attempt(5).
+				WaitTime(time.Millisecond * 500).MaxWaitTime(time.Second * 5).
+				Do()
+		}
 		if err != nil || code != 200 {
+			errmsg := "更新失败： http_code" + strconv.Itoa(code)
+			if err != nil {
+				errmsg = err.Error()
+			}
 			log.Errorf("upsave notify post  usercookie to %s faild", postUrl)
 			c.JSON(200, MSG{
 				"err":   1,
 				"title": "更新到挂机服务器失败",
-				"msg":   err.Error(),
+				"msg":   errmsg,
 			})
+			return
 		} else {
-			errcode := res["err"]
-			if errcode == nil {
-				errcode = 0
-			}
-			title := res["title"]
-			if title == nil {
-				title = "更新到挂机服务成功"
-			}
-			msg := res["msg"]
-			if msg == nil {
-				msg = "cookie= " + token.UserCookie
-			}
 			c.JSON(200, MSG{
-				"err":   errcode,
-				"title": title,
-				"msg":   fmt.Sprintf("%s, cookie= %s", msg, token.UserCookie),
+				"err":   0,
+				"title": "已推送到指定服务器",
+				"msg":   fmt.Sprintf("%s, cookie= %s", res, token.UserCookie),
 			})
 		}
 		return
