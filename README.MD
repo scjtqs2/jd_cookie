@@ -1,4 +1,3 @@
-[![Build Status](https://drone.pi.scjtqs.com:8443/api/badges/scjtqs/jd_cookie/status.svg)](https://drone.pi.scjtqs.com:8443/scjtqs/jd_cookie)
 
 # 说明
 
@@ -162,6 +161,8 @@ docker pull jd_cookie scjtqs/jd_cookie:latest
 docker run -d \
 -p 29099:29099 \
 -e UPSAVE="http://192.168.0.12:8080/savecookie" \
+-e UPSAVE_METHOD="GET" \
+-e UPSAVE_KEY="hhkb" \
 -e DB_ENABLE="true" \
 -e DB_HOST="192.168.0.13" \
 -e DB_PORT="3306" \
@@ -179,6 +180,8 @@ docker run -d \
 -p 29099:29099 \
 -v `pwd`/db/:/opt/app/db/ \
 -e UPSAVE="http://192.168.0.12:8080/savecookie" \
+-e UPSAVE_METHOD="POST" \
+-e UPSAVE_KEY="userCookie" \
 -e DB_ENABLE="true" \
 -e DB_HOST="./db/cookies.db" \
 -e DB_TYPE="sqlite3" \
