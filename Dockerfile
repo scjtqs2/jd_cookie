@@ -1,4 +1,4 @@
-FROM golang:1.17 as builder
+FROM golang:1.17-buster as builder
 
 
 LABEL name="jd_cookie server"
@@ -6,7 +6,7 @@ LABEL version="3.0.1"
 LABEL author="scjtqs <scjtqs@qq.com>"
 LABEL maintainer="scjtqs <scjtqs@qq.com>"
 LABEL description="simple to get jd cookie"
-
+COPY ./sources.list /etc/apt/sources.list
 ARG Version="v3.0.1"
 
 ADD . /src
